@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "axios": "^1.16.0",
+    "dotenv": "^17.4.2",
+    "geolib": "^3.3.14",
+    "telegraf": "^4.16.3"
+  },
+  "name": "server",
+  "version": "1.0.0",
+  "main": "prayer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "kibla": "node"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
