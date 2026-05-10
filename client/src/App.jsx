@@ -38,7 +38,10 @@ function App() {
   };
 
   // 3-Digit Decimal Logic for Abu Dream
-  const displayHeading = Number(heading).toFixed(1).padStart(5, "0");
+  const currentHeading = Number(heading) || 0;
+
+  // 2. Format it to 1 decimal place (e.g., 10.4)
+  const displayHeading = currentHeading.toFixed(1);
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white flex flex-col items-center justify-between p-6 overflow-hidden">
@@ -109,7 +112,7 @@ function App() {
               Makkah
             </p>
             <p className="text-2xl font-mono text-emerald-400">
-              {Number(qiblaDir).toFixed(1)}°
+              {Number(qiblaDir).toFixed(0)}°
             </p>
           </div>
         </div>
