@@ -42,6 +42,7 @@ function App() {
       window.addEventListener("deviceorientation", handleMotion);
     }
   };
+  const displayHeading = Number(heading).toFixed(1);
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white flex flex-col items-center justify-between p-6 overflow-hidden">
@@ -84,10 +85,14 @@ function App() {
           transition={{ type: "spring", stiffness: 50, damping: 20 }}
           className="absolute w-full h-full flex items-center justify-center pointer-events-none"
         >
-          <div className="flex flex-col items-center">
-            <span className="text-3xl mb-1 drop-shadow-xl">🕋</span>
-            <div className="w-1.5 h-24 bg-gradient-to-t from-transparent via-emerald-500 to-emerald-400 rounded-full"></div>
-            <div className="w-4 h-4 bg-emerald-400 rotate-45 -mt-2 shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
+          {/* The icon is wrapped in a container that is 100% height. 
+      By putting the 🕋 inside a div and moving it to the top, 
+      it orbits the center perfectly without a confusing line.
+  */}
+          <div className="h-full flex flex-col items-center justify-start pt-2">
+            <span className="text-4xl drop-shadow-[0_0_15px_rgba(52,211,153,0.6)]">
+              🕋
+            </span>
           </div>
         </motion.div>
       </div>
@@ -98,9 +103,9 @@ function App() {
         <div className="bg-slate-900/90 p-5 rounded-3xl border border-slate-800 grid grid-cols-2 gap-4">
           <div className="text-center">
             <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">
-            your Direction
+              your Direction
             </p>
-            <p className="text-2xl font-mono text-white">{heading}°</p>
+            <p className="text-2xl font-mono text-white">{displayHeading}°</p>
           </div>
           <div className="text-center border-l border-slate-800">
             <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">
