@@ -41,7 +41,7 @@ function App() {
   const currentHeading = Number(heading) || 0;
 
   // 2. Format it to 1 decimal place (e.g., 10.4)
-  const displayHeading = currentHeading.toFixed(1);
+  const displayHeading = currentHeading.toFixed(0);
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white flex flex-col items-center justify-between p-6 overflow-hidden">
