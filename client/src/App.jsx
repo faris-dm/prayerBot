@@ -1,16 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-// import { findQiblaAngle, getCleanHeading } from "./compassLogic";
 import { findQiblaAngle, getCleanHeading } from "./compass";
 
 function App() {
-  const [heading, setHeading] = useState(0); // The phone's rotation
-  const [qiblaDir, setQiblaDir] = useState(0); // The target angle
+  const [heading, setHeading] = useState(0);
+  const [qiblaDir, setQiblaDir] = useState(0);
   const [isActive, setIsActive] = useState(false);
 
-  // Starts the GPS and the Compass Sensors
-  const startSensors = () => {
-    // 1. Get GPS Location
+  const handleMotion = (event) => {
+    const actualHeading = getCleanHeading(event);
+    if (actualHeading !== null) setHeading(actualHeading);
+  };
+
+  const startSensors = async () => {
     navigator.geolocation.getCurrentPosition(
       (data) => {
         const angle = findQiblaAngle(
@@ -20,29 +22,23 @@ function App() {
         setQiblaDir(angle);
         setIsActive(true);
       },
-      (err) => alert("Please enable location to find Makkah")
+      (err) => alert("Please enable location")
     );
 
-    // 2. Handle Orientation (Compass)
-    const handleMotion = (event) => {
-      const actualHeading = getCleanHeading(event);
-      setHeading(actualHeading);
-    };
-
-    // 3. Request Permission for iOS/Android
-    if (typeof DeviceOrientationEvent.requestPermission === "function") {
-      DeviceOrientationEvent.requestPermission()
-        .then((state) => {
-          if (state === "granted") {
-            window.addEventListener("deviceorientation", handleMotion);
-          }
-        })
-        .catch(console.error);
+    if (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      typeof DeviceOrientationEvent.requestPermission === "function"
+    ) {
+      const state = await DeviceOrientationEvent.requestPermission();
+      if (state === "granted")
+        window.addEventListener("deviceorientation", handleMotion, true);
     } else {
-      window.addEventListener("deviceorientation", handleMotion);
+      window.addEventListener("deviceorientation", handleMotion, true);
     }
   };
-  const displayHeading = Number(heading).toFixed(1);
+
+  // 3-Digit Decimal Logic for Abu Dream
+  const displayHeading = Number(heading).toFixed(1).padStart(5, "0");
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white flex flex-col items-center justify-between p-6 overflow-hidden">
@@ -61,7 +57,7 @@ function App() {
         {/* Static Background Glow */}
         <div className="absolute w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl"></div>
 
-        {/* Outer Directional Ring (Static) */}
+        {/* Outer Directional Ring */}
         <div className="absolute w-full h-full border-2 border-slate-800 rounded-full flex items-center justify-center">
           <span className="absolute top-4 font-black text-indigo-400">N</span>
           <span className="absolute bottom-4 font-black text-rose-400">S</span>
@@ -69,41 +65,42 @@ function App() {
           <span className="absolute left-4 font-black text-cyan-400">W</span>
         </div>
 
-        {/* Rotating Compass Face */}
+        {/* 1. THE CENTER POINT (Stationary) */}
+        <div className="absolute flex items-center justify-center z-30">
+          <div className="w-3 h-3 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.8)]"></div>
+        </div>
+
+        {/* 2. THE ROTATING COMPASS FACE */}
         <motion.div
           animate={{ rotate: -heading }}
           transition={{ type: "spring", stiffness: 40, damping: 15 }}
           className="relative w-[75%] h-[75%] rounded-full border border-slate-700 bg-slate-900/50 shadow-2xl flex items-center justify-center"
         >
-          {/* Simple North Tick */}
           <div className="w-1 h-4 bg-indigo-500 absolute top-0"></div>
         </motion.div>
 
-        {/* The Qibla Needle (Points to Makkah) */}
+        {/* 3. THE QIBLA LINE & ICON (Points to Makkah) */}
         <motion.div
           animate={{ rotate: qiblaDir - heading }}
           transition={{ type: "spring", stiffness: 50, damping: 20 }}
           className="absolute w-full h-full flex items-center justify-center pointer-events-none"
         >
-          {/* The icon is wrapped in a container that is 100% height. 
-      By putting the 🕋 inside a div and moving it to the top, 
-      it orbits the center perfectly without a confusing line.
-  */}
           <div className="h-full flex flex-col items-center justify-start pt-2">
-            <span className="text-4xl drop-shadow-[0_0_15px_rgba(52,211,153,0.6)]">
+            <span className="text-4xl drop-shadow-[0_0_15px_rgba(52,211,153,0.6)] z-20">
               🕋
             </span>
+            {/* THE LINE ADDED HERE */}
+            <div className="w-[1.5px] h-64 bg-gradient-to-b from-emerald-400 via-emerald-500/20 to-transparent -mt-1 opacity-90"></div>
           </div>
         </motion.div>
       </div>
 
-      {/* FOOTER DATA & BUTTONS */}
+      {/* FOOTER DATA */}
       <div className="w-full max-w-sm space-y-4 mb-4">
-        {/* Data Card */}
         <div className="bg-slate-900/90 p-5 rounded-3xl border border-slate-800 grid grid-cols-2 gap-4">
           <div className="text-center">
             <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">
-              your Direction
+              Your Direction
             </p>
             <p className="text-2xl font-mono text-white">{displayHeading}°</p>
           </div>
@@ -117,20 +114,12 @@ function App() {
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex flex-col gap-3">
           <button
             onClick={startSensors}
-            className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all rounded-2xl font-black text-white shadow-lg shadow-indigo-600/20"
+            className="w-full py-5 bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all rounded-2xl font-black text-white"
           >
             {isActive ? "SENSORS ACTIVE" : "ACTIVATE COMPASS"}
-          </button>
-
-          <button
-            onClick={() => window.location.reload()}
-            className="w-full py-3 text-slate-500 text-xs font-bold uppercase tracking-widest"
-          >
-            Reset App
           </button>
         </div>
       </div>
