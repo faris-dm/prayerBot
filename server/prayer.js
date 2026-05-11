@@ -2,7 +2,6 @@ import axios from "axios";
 import "dotenv/config";
 import { Telegraf } from "telegraf";
 
-
 // get / timings / { date };
 // get / timingsByAddress / { date };
 // get / timingsByCity / { date };
@@ -41,6 +40,26 @@ bot.telegram.setMyCommands([
   { command: "atkhar", description: "Read daily atkar" },
   { command: "profile", description: "personal information" },
 ]);
+
+// PUT THIS BEFORE bot.launch()
+bot.command("qibla", (ctx) => {
+  return ctx.reply(
+    "🕋 <b>Qibla Finder</b>\n\nTo find the direction of Makkah, click the button below to launch our precision compass.",
+    {
+      parse_mode: "HTML",
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "🧭 Launch Compass App",
+              web_app: { url: "https://prayer-bot-beta.vercel.app" }, // Use your real Vercel link here
+            },
+          ],
+        ],
+      },
+    }
+  );
+});
 
 bot.command("location", (ctx) => {
   const userId = ctx.from.id;
