@@ -1,6 +1,7 @@
 import axios from "axios";
 import "dotenv/config";
 import { Telegraf } from "telegraf";
+import http from "http";
 
 // get / timings / { date };
 // get / timingsByAddress / { date };
@@ -9,8 +10,16 @@ import { Telegraf } from "telegraf";
 // get / nextPrayerByAddress / { date };
 
 const bot = new Telegraf("8652946666:AAEMASyrOfM_QYOKmJ3pH8vr8ZFF0mruBIQ");
-const port = 5400;
+const port = process.env.PORT || 5400;
 
+http
+  .createServer((req, res) => {
+    res.write("Bot is Live");
+    res.end();
+  })
+  .listen(port, "0.0.0.0", () => {
+    console.log(`Server is running on port ${port}`);
+  });
 bot.start((ctx) => {
   const welcomeMessage = `
 🌟 <b>Welcome to Kibla Bot!</b> 🌟
