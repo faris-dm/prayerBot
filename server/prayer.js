@@ -1,5 +1,6 @@
 import axios from "axios";
 import express from "express";
+const port = process.env.PORT || 5400;
 import "dotenv/config";
 import { Telegraf } from "telegraf";
 import http from "http";
@@ -16,7 +17,6 @@ app.get("/", (req, res) => {
 });
 
 const bot = new Telegraf("8652946666:AAEMASyrOfM_QYOKmJ3pH8vr8ZFF0mruBIQ");
-const port = process.env.PORT || 5400;
 
 app.listen(port, "0.0.0.0", () => {
   console.log(`Admin panel running on port ${port}`);
@@ -177,5 +177,5 @@ bot.on("text", async (ctx) => {
   }
 });
 
-console.log(`the port is running http//:localhost:${port}:prayer`);
+console.log(`the port is running http://localhost:${port}`);
 bot.launch();
