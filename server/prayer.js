@@ -1,25 +1,27 @@
 import axios from "axios";
+import express from "express";
 import "dotenv/config";
 import { Telegraf } from "telegraf";
 import http from "http";
+import cors from "cors";
+const app = express();
+app.use(
+  cors({
+    origin: "https://prayer-bot-beta.vercel.app",
+  })
+);
 
-// get / timings / { date };
-// get / timingsByAddress / { date };
-// get / timingsByCity / { date };
-// get / nextPrayer / { date };
-// get / nextPrayerByAddress / { date };
+app.get("/", (req, res) => {
+  res.send("Kibla Server is running...");
+});
 
 const bot = new Telegraf("8652946666:AAEMASyrOfM_QYOKmJ3pH8vr8ZFF0mruBIQ");
 const port = process.env.PORT || 5400;
 
-http
-  .createServer((req, res) => {
-    res.write("Bot is Live");
-    res.end();
-  })
-  .listen(port, "0.0.0.0", () => {
-    console.log(`Server is running on port ${port}`);
-  });
+app.listen(port, "0.0.0.0", () => {
+  console.log(`Admin panel running on port ${port}`);
+});
+
 bot.start((ctx) => {
   const welcomeMessage = `
 🌟 <b>Welcome to Kibla Bot!</b> 🌟
