@@ -13,27 +13,41 @@ function App() {
   };
 
   const startSensors = async () => {
+    if (!navigator.geolocation) {
+      alert("GPS not supported on this browser.");
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       (data) => {
         const angle = findQiblaAngle(
           data.coords.latitude,
           data.coords.longitude
         );
-        setQiblaDir(angle);
+        setQiblaDir(angle); // This is what updates the Makkah degree
         setIsActive(true);
       },
-      (err) => alert("Please enable location")
+      (err) => alert("GPS Error: " + err.message), // This will tell you WHY it's 0
+      { enableHighAccuracy: true }
     );
-
     if (
       typeof DeviceOrientationEvent !== "undefined" &&
       typeof DeviceOrientationEvent.requestPermission === "function"
     ) {
       const state = await DeviceOrientationEvent.requestPermission();
-      if (state === "granted")
+      if (state === "granted") {
         window.addEventListener("deviceorientation", handleMotion, true);
+      }
     } else {
-      window.addEventListener("deviceorientation", handleMotion, true);
+      // 3. THE ANDROID FIX: Listen for 'absolute' orientation
+      if ("ondeviceorientationabsolute" in window) {
+        window.addEventListener(
+          "deviceorientationabsolute",
+          handleMotion,
+          true
+        );
+      } else {
+        window.addEventListener("deviceorientation", handleMotion, true);
+      }
     }
   };
 
@@ -51,7 +65,7 @@ function App() {
           QIBLA<span className="text-white">PRO</span>
         </h1>
         <p className="text-slate-500 text-xs uppercase tracking-widest font-bold">
-          Abu Dream Edition
+          Dream Edition
         </p>
       </div>
 

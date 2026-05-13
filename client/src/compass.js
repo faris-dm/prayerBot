@@ -1,8 +1,6 @@
 import { getGreatCircleBearing } from "geolib";
 
-/**
- * Calculates the bearing from the user to Makkah.
- */
+
 export const findQiblaAngle = (userLat, userLon) => {
   const makkah = { latitude: 21.4224, longitude: 39.8262 };
   const user = { latitude: userLat, longitude: userLon };
