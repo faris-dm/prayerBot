@@ -12,44 +12,51 @@ function App() {
     if (actualHeading !== null) setHeading(actualHeading);
   };
 
-  const startSensors = async () => {
-    if (!navigator.geolocation) {
-      alert("GPS not supported on this browser.");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (data) => {
-        const angle = findQiblaAngle(
-          data.coords.latitude,
-          data.coords.longitude
-        );
-        setQiblaDir(angle); // This is what updates the Makkah degree
-        setIsActive(true);
-      },
-      (err) => alert("GPS Error: " + err.message), // This will tell you WHY it's 0
-      { enableHighAccuracy: true }
-    );
-    if (
-      typeof DeviceOrientationEvent !== "undefined" &&
-      typeof DeviceOrientationEvent.requestPermission === "function"
-    ) {
-      const state = await DeviceOrientationEvent.requestPermission();
-      if (state === "granted") {
-        window.addEventListener("deviceorientation", handleMotion, true);
-      }
-    } else {
-      // 3. THE ANDROID FIX: Listen for 'absolute' orientation
-      if ("ondeviceorientationabsolute" in window) {
-        window.addEventListener(
-          "deviceorientationabsolute",
-          handleMotion,
-          true
-        );
-      } else {
-        window.addEventListener("deviceorientation", handleMotion, true);
-      }
-    }
-  };
+ const startSensors = async () => {
+   if (!navigator.geolocation) {
+     alert("GPS not supported on this browser.");
+     return;
+   }
+
+   // Direct fix for Android GPS permissions
+   navigator.geolocation.getCurrentPosition(
+     (data) => {
+       const angle = findQiblaAngle(
+         data.coords.latitude,
+         data.coords.longitude
+       );
+       setQiblaDir(angle);
+       setIsActive(true);
+     },
+     (err) => {
+       // This alert will show you the exact reason Android is blocking it
+       alert(
+         `GPS Error (${err.code}): ${err.message}. Ensure you are using HTTPS and location is turned ON.`
+       );
+     },
+     {
+       enableHighAccuracy: true,
+       timeout: 15000,
+       maximumAge: 0,
+     }
+   );
+
+   if (
+     typeof DeviceOrientationEvent !== "undefined" &&
+     typeof DeviceOrientationEvent.requestPermission === "function"
+   ) {
+     const state = await DeviceOrientationEvent.requestPermission();
+     if (state === "granted") {
+       window.addEventListener("deviceorientation", handleMotion, true);
+     }
+   } else {
+     if ("ondeviceorientationabsolute" in window) {
+       window.addEventListener("deviceorientationabsolute", handleMotion, true);
+     } else {
+       window.addEventListener("deviceorientation", handleMotion, true);
+     }
+   }
+ };
 
   // 3-Digit Decimal Logic for Abu Dream
   const currentHeading = Number(heading) || 0;
