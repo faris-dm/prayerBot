@@ -12,51 +12,71 @@ function App() {
     if (actualHeading !== null) setHeading(actualHeading);
   };
 
- const startSensors = async () => {
-   if (!navigator.geolocation) {
-     alert("GPS not supported on this browser.");
-     return;
-   }
+  const startSensors = async () => {
+    // 1. IMMEDIATELY ASK FOR ORIENTATION (Locks down the iPhone user-gesture requirement)
+    if (
+      typeof DeviceOrientationEvent !== "undefined" &&
+      typeof DeviceOrientationEvent.requestPermission === "function"
+    ) {
+      try {
+        const state = await DeviceOrientationEvent.requestPermission();
+        if (state === "granted") {
+          window.addEventListener("deviceorientation", handleMotion, true);
+          setIsActive(true);
+        } else {
+          alert("Orientation permission denied by user.");
+          return;
+        }
+      } catch (err) {
+        alert("iOS Sensor Error: Tap the button again directly.");
+        return;
+      }
+    } else {
+      // Android / Desktop fallback
+      if ("ondeviceorientationabsolute" in window) {
+        window.addEventListener(
+          "deviceorientationabsolute",
+          handleMotion,
+          true
+        );
+      } else {
+        window.addEventListener("deviceorientation", handleMotion, true);
+      }
+      setIsActive(true);
+    }
 
-   // Direct fix for Android GPS permissions
-   navigator.geolocation.getCurrentPosition(
-     (data) => {
-       const angle = findQiblaAngle(
-         data.coords.latitude,
-         data.coords.longitude
-       );
-       setQiblaDir(angle);
-       setIsActive(true);
-     },
-     (err) => {
-       // This alert will show you the exact reason Android is blocking it
-       alert(
-         `GPS Error (${err.code}): ${err.message}. Ensure you are using HTTPS and location is turned ON.`
-       );
-     },
-     {
-       enableHighAccuracy: true,
-       timeout: 15000,
-       maximumAge: 0,
-     }
-   );
+    // 2. NOW FETCH GPS (Safe to wait now that orientation is bound)
+    if (!navigator.geolocation) {
+      alert("GPS not supported on this browser.");
+      return;
+    }
 
-   if (
-     typeof DeviceOrientationEvent !== "undefined" &&
-     typeof DeviceOrientationEvent.requestPermission === "function"
-   ) {
-     const state = await DeviceOrientationEvent.requestPermission();
-     if (state === "granted") {
-       window.addEventListener("deviceorientation", handleMotion, true);
-     }
-   } else {
-     if ("ondeviceorientationabsolute" in window) {
-       window.addEventListener("deviceorientationabsolute", handleMotion, true);
-     } else {
-       window.addEventListener("deviceorientation", handleMotion, true);
-     }
-   }
- };
+    navigator.geolocation.getCurrentPosition(
+      (data) => {
+        const angle = findQiblaAngle(
+          data.coords.latitude,
+          data.coords.longitude
+        );
+
+        // Force state update for Makkah angle display
+        if (angle !== undefined && angle !== null) {
+          setQiblaDir(Number(angle));
+        } else {
+          alert("Calculated angle was invalid.");
+        }
+      },
+      (err) => {
+        alert(
+          `GPS Error (${err.code}): ${err.message}. Ensure Location Services are ON for Telegram.`
+        );
+      },
+      {
+        enableHighAccuracy: false, // Turned off strict accuracy so iOS webview returns data faster
+        timeout: 10000,
+        maximumAge: 60000, // Accept a cached position if available to speed it up
+      }
+    );
+  };
 
   // 3-Digit Decimal Logic for Abu Dream
   const currentHeading = Number(heading) || 0;
@@ -133,7 +153,7 @@ function App() {
               Makkah
             </p>
             <p className="text-2xl font-mono text-emerald-400">
-              {Number(qiblaDir).toFixed(0)}°
+              {qiblaDir !== 0 ? `${Math.round(qiblaDir)}°` : "---"}
             </p>
           </div>
         </div>
