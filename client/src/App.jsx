@@ -153,7 +153,7 @@ function App() {
               Makkah
             </p>
             <p className="text-2xl font-mono text-emerald-400">
-              {qiblaDir !== 0 ? `${Math.round(qiblaDir)}°` : "---"}
+              {qiblaDir !== 0 ? `${Math.round(qiblaDir)}°` : "trying"}
             </p>
           </div>
         </div>
